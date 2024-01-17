@@ -1,5 +1,5 @@
-import dash
 import os
+import dash
 from dash import dcc, html, ctx, Input, Output, State
 import pandas as pd
 import plotly.express as px
@@ -511,7 +511,7 @@ sidebar = html.Div(
             [
                 dbc.NavLink("Home", href="/", active="exact"),
                 dbc.NavLink("Articles", href="/articles", active="exact"),
-                #dbc.NavLink("Books", href="/books", active="exact"), Not implemented yet.
+                #dbc.NavLink("Books", href="/books", active="exact"), Not implemented yet
                 dbc.NavLink("Newswire", href="/newswire", active="exact")
             ],
             vertical=True,
