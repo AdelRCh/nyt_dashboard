@@ -1,4 +1,5 @@
 import dash
+import os
 from dash import dcc, html, ctx
 import pandas as pd
 import plotly.express as px
@@ -341,8 +342,9 @@ class NewswireData:
             return self.geo_abstract_df
 
 #Receiving our data from MongoDB
-MONGO_URL = 'mongodb://127.0.0.1:27017/' #Please change this for our app as needed
-DB_CLIENT = pymongo.MongoClient(MONGO_URL)
+MONGO_LABEL = os.environ.get('MONGODB_ADDRESS','localhost') #Unless you have your own address
+MONGO_PORT = int(os.environ.get('MONGODB_PORT',27017)) #Unless you have a specific port, default is 27017
+DB_CLIENT = pymongo.MongoClient(host=MONGO_LABEL, port=MONGO_PORT)
 db = DB_CLIENT['NY_Project']
 
 #Nonfiction books will have a standalone API, courtesy of Jessica.
