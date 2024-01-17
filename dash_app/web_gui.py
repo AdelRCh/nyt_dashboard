@@ -652,7 +652,7 @@ def update_search_results(search_query):
 
     # Display search results as links
     result_links = [
-        html.Li(html.A(result['headline'], href=result['web_url'])) for result in search_results
+        html.Li(html.A(result['headline'], href=result['web_url'], target='_blank')) for result in search_results
     ]
 
     return result_links #Insert Kenan's section here
