@@ -11,7 +11,9 @@ For this project to work locally, please acquire an API code from [the New York 
 export "NYTIMES_API_KEY=<your_api_key>"
 ~~~
 
-Contained within both folders are Dockerfiles for those looking to create containers for testing.
+Furthermore, as **this project uses a MongoDB database,** please ensure that a database instance is running.
+
+Contained within both folders are Dockerfiles for those looking to create containers for testing. Requirement files are also provided for each folder:
 
 * **newswire_acquisition**'s container is missing a critical environment variable: the NY Times API key. One can also supply their own MONGODB_ADDRESS and MONGODB_PORT to customize those values within the container.
 * **dash_app** can also take MONGODB_ADDRESS and MONGODB_PORT as custom arguments, as needed.
