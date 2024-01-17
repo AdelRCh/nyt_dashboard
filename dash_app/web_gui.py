@@ -367,6 +367,7 @@ app = dash.Dash(__name__, external_stylesheets=[dbc.themes.SLATE], suppress_call
 load_figure_template('slate')
 
 #Sidebar and main page implementations taken from DBC's documentation
+#See: https://dash-bootstrap-components.opensource.faculty.ai/examples/simple-sidebar/
 sidebar_style = {
     "position": "fixed",
     "top": 0,
