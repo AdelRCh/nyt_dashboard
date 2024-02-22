@@ -1,0 +1,49 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+#Storage volume
+mongodb/nydata/
+
+# Flask/Dash stuff:
+instance/
+.webassets-cache
+
+#Notebooks and checkpoints
+notebooks/
+.ipynb_checkpoints
+
+# IPython
+profile_default/
+ipython_config.py
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
