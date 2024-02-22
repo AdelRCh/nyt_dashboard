@@ -18,5 +18,8 @@ Contained within both folders are Dockerfiles for those looking to create contai
 * **newswire_acquisition**'s container is missing a critical environment variable: the NY Times API key. One can also supply their own MONGODB_ADDRESS and MONGODB_PORT to customize those values within the container.
 * **dash_app** can also take MONGODB_ADDRESS and MONGODB_PORT as custom arguments, as needed.
 
+## Upcoming changes
 
+I will expand this repository to include a revamped portal where I will use the NY Times' various APIs fit to purpose. Expect gradual changes to occur over time as I build/remake sections one by one.
 
+Folders not listed in the README file are new features.
