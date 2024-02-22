@@ -357,7 +357,11 @@ nwdata = NewswireData()
 #Loading the values that go into the section dropdown on the Topic tab - Newswire API Data
 section_labels = ['All']
 section_labels.extend(newswire.distinct('section'))
-section_labels.remove('')
+
+try:
+    section_labels.remove('')
+except:
+    pass #No glitchy entry to remove
 
 nw_search_res = []
 nw_search_size = 10
