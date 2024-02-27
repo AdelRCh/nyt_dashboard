@@ -10,6 +10,7 @@ import datetime
 import time
 from tqdm import tqdm
 import os
+import sys
 
 API_KEY = os.getenv('NYTIMES_API_KEY') #If None, will prompt the user to get a key.
 
@@ -32,8 +33,9 @@ def nyt_requests_get(url, endpoint, payload=None):
     time.sleep(WAIT_TIME)
     return re
 
-def add_section_output(section:str, batch_size:int = 500):
-    '''We provide a section name, and we receive the output for that specific section here.'''
+def add_section_output(section:str, batch_size:int = 500, source:str = 'nyt'):
+    '''We provide a section name, and we receive the output for that specific section here.
+    We can also provide the edition (by default the NY Times).'''
 
     global API_KEY
     global DB_CLIENT
@@ -42,7 +44,7 @@ def add_section_output(section:str, batch_size:int = 500):
     db = DB_CLIENT['NY_Project']
     nw_collection = db['times_newswire']
 
-    endp_section = f'/nyt/{section}.json'
+    endp_section = f'/{source}/{section}.json'
     url = 'https://api.nytimes.com/svc/news/v3/content'
 
     #We will receive 500 outputs from the API (potentially).
@@ -103,6 +105,12 @@ def add_section_output(section:str, batch_size:int = 500):
                 except:
                     continue #skip to the next if there is nothing in that field
 
+        for excess_key in ['multimedia','slug_name']:
+                try:
+                    del item[excess_key]
+                except:
+                    continue
+
         #Query MongoDB to check if the item already exists + get the update date if it does:
         mongo_check = nw_collection.find_one({"uri":item['uri']},{"uri":1,"updated_date":1})
         pbar.update()
@@ -112,10 +120,9 @@ def add_section_output(section:str, batch_size:int = 500):
             nw_collection.insert_one(item)
             unupdated_streak = 0
 
-        else:
+        elif mongo_check['updated_date'] != item['updated_date']:
             #Do we already have the item? Check if there was a change.
             #Domain-specific knowledge: check if the 'updated_date' field has changed to determine that.
-            if mongo_check['updated_date'] != item['updated_date']:
                 nw_collection.update_one({"uri":item['uri']}, {"$set":item}, upsert=True)
                 unupdated_streak = 0
 
@@ -123,15 +130,15 @@ def add_section_output(section:str, batch_size:int = 500):
             #Eventualy, one thing we can do is "return None" on the ELSE section if there's a streak of unupdated articles.
             #We could set a threshold of "if we get 5 un-updated articles in a row, we call it a wrap."
             #I will pre-emptively include this.
-            else:
-                unupdated_streak += 1
+        else:
+            unupdated_streak += 1
 
-                if unupdated_streak > 10:
+            if unupdated_streak > 50:
                     pbar.close()
                     return None
 
 
-def get_full_newswire_output():
+def get_full_newswire_output(edition:str = 'nyt'):
     '''This function allows us to send a request and get the latest news articles
     via the News Wire API.'''
     global DB_CLIENT
@@ -172,7 +179,7 @@ def get_full_newswire_output():
     for sec in sec_names_list:
 
         print(f'\n\nProcessing the section "{sec}" from the NYT Newswire API')
-        add_section_output(sec)
+        add_section_output(section=sec, source=edition)
         full_pbar.update()
         #print(f'Section "{sec}" processed.\n')
 
@@ -185,4 +192,40 @@ if __name__=='__main__':
 Please run this script after performing this step.''')
     else:
         print("Performing data acquisition routines from the New York Times' TimesWire API.")
-        get_full_newswire_output()
+
+        #CLI mode: we select specific sections, batch sizes, and editions
+        if len(sys.argv) >=4:
+            try:
+                section_param = sys.argv[1].lower()
+
+                try:
+                    count_param = int(sys.argv[2])
+                    count_param = (count_param//20)*20
+                    assert count_param<=500, 'We cannot go over 500 entries per batch.'
+                except:
+                    count_param = 500 #default value
+
+                try:
+                    edition_param = sys.argv[3]
+                    assert edition_param in ['nyt','all','inyt'],'Invalid value for the Edition parameter'
+                except:
+                    edition_param = 'nyt'
+
+                add_section_output(section_param, count_param, edition_param)
+
+            except:
+                get_full_newswire_output()
+
+        #Only one parameter: it better be your edition. If it's a help request, fine, we need to implement that.
+        elif len(sys.argv) == 2 and not (sys.argv[1].lower() in ['-h', '--help', '-help']):
+
+            try:
+                edition_param = sys.argv[1].lower()
+                assert edition_param in ['nyt','all','inyt'],'Invalid value for the Edition parameter'
+            except:
+                edition_param = 'nyt'
+
+            get_full_newswire_output(edition=edition_param)
+
+        elif len(sys.argv) == 2 and (sys.argv[1].lower() in ['-h', '--help', '-help']):
+            print('''TO DO: implement documentation on CLI.''')

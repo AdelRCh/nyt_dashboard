@@ -12,9 +12,14 @@ import random
 import numpy as np
 
 import logging
+import sys
 
 logging.basicConfig(level=logging.INFO)
 
+API_KEY = os.getenv('NYTIMES_API_KEY') #If None, will prompt the user to get a key.
+
+MONGO_LABEL = os.environ.get('MONGODB_ADDRESS','localhost') #Unless you have your own address
+MONGO_PORT = int(os.environ.get('MONGODB_PORT',27017)) #Unless you have a specific port, default is 27017
 
 
 
@@ -28,15 +33,14 @@ def natural_variation_delay(min_delay=12, max_delay=15):
 
 
 
-def main():
+def get_article_search_pages(nb_pages=100):
     logging.info("Starting the import process...")
 
+    global API_KEY
+    global MONGO_LABEL
+    global MONGO_PORT
+
     # Access API
-    API_KEY = os.getenv('NYTIMES_API_KEY') #If None, will prompt the user to get a key.
-
-    MONGO_LABEL = os.environ.get('MONGODB_ADDRESS','localhost') #Unless you have your own address
-    MONGO_PORT = int(os.environ.get('MONGODB_PORT',27017)) #Unless you have a specific port, default is 27017
-
     url = 'https://api.nytimes.com/svc/search/v2/'
     endpoint = 'articlesearch.json'
 
@@ -65,12 +69,12 @@ def main():
 
     logging.info('Starting while loop')
 
-    while page < 100:
+    while page < nb_pages:
         DOCS = []
 
         #while attempts < 5:
         try:
-            logging.info(f"Trying page {page}, attempt {attempts + 1}")
+            logging.info(f"Trying page {page+1}, attempt {attempts + 1}")
 
             res = requests.get(f'{url}/{endpoint}?page={page}&api-key={API_KEY}')
             res.raise_for_status()  # Raises an HTTPError if the HTTP request returned an unsuccessful status code
@@ -137,4 +141,20 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    nb = 10
+    try:
+        nb = int(sys.argv[1])
+    except:
+        print('''For future reference: please run the command as follows:
+        python3 ny_articlesearch_import.py nb_of_pages
+nb_of_pages must be an integer. Otherwise, we will default to 10 page results.
+If that is fine, please disregard this message.\n''')
+
+    if API_KEY is not None:
+        get_article_search_pages(nb)
+    else:
+        print('''Please generate an API key at https://developer.nytimes.com/ and add it to your environment variables as follows:
+
+    export "NYTIMES_API_KEY=<your_api_key>"
+
+Please run this script after performing this step.''')
