@@ -4,8 +4,7 @@
 import os
 import requests
 import json
-import pymongo
-from pymongo import ReplaceOne
+from pymongo import MongoClient
 
 import time
 import random
@@ -44,20 +43,13 @@ def get_article_search_pages(nb_pages=100):
     url = 'https://api.nytimes.com/svc/search/v2/'
     endpoint = 'articlesearch.json'
 
-
     logging.info('Accessing client')
     # Access DB
-    from pymongo import MongoClient
     client = MongoClient(host=MONGO_LABEL, port=MONGO_PORT)
 
     # Access the database
     db = client['NY_Project']
     collection = db['ny_articles']
-
-
-    ##
-
-    #DOCS = []
 
     # Get the maximum _id value from the collection
     max_id = collection.find_one(sort=[("ny_id", -1)])
@@ -67,7 +59,7 @@ def get_article_search_pages(nb_pages=100):
     page = 0
     attempts = 0
 
-    logging.info('Starting while loop')
+    logging.info('Collecting results one page at a time using a while loop.')
 
     while page < nb_pages:
         DOCS = []
@@ -102,40 +94,26 @@ def get_article_search_pages(nb_pages=100):
             natural_variation_delay()  # Wait before retrying
             natural_variation_delay()
 
-        # except requests.HTTPError as http_err:
-        #     # Handle HTTP errors here
-        #     print(f"HTTPError occurred: {http_err}")
-        #     break  # Exit the attempts loop and go to the next page
-
-
-        # except requests.RequestException as req_err:
-        #     # Handle other requests exceptions here
-        #     print(f"RequestException occurred: {req_err}")
-        #     break  # Exit the attempts loop and go to the next page
-
-
-    # insert all at once
-    # try:
-    #     collection.insert_many(DOCS, ordered=False)
-    # except pymongo.errors.BulkWriteError as bwe:
-    #     print(bwe.details)
-
 
         # insert articles by updating
         for doc in DOCS:
             # Assuming 'uri' is the unique identifier field in your article data
             article_uri = doc['uri']
-
-            # rename the _id as there is a immutable _id field in mongodb
-            if '_id' in doc:
-                #doc['ny_id'] = doc['_id']
-                del doc['_id']
-
+            
+            #Removing extra keys - if they aren't in our document, proceed as if
+            #nothing happened.
+            for excess_key in ['multimedia','keywords','_id']:
+                try:
+                    del doc[excess_key]
+                except:
+                    continue
+            
+            #Adjust the byline and headline fields - implement later
+            #doc['byline'] = doc.get('byline',{}).get('original',None)
+            #doc['headline'] = doc.get('headline',{}).get('main',None)
 
             # Update the article if it exists, otherwise insert it
             collection.update_one({'uri': article_uri}, {'$set': doc}, upsert=True)
-
-
 
     logging.info("Import process completed.")
 

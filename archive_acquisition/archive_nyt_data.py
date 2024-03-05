@@ -4,6 +4,7 @@ import datetime
 import time
 from tqdm import tqdm
 import os
+import sys
 
 API_KEY = os.getenv('NYTIMES_API_KEY') #If None, will prompt the user to get a key.
 
@@ -25,7 +26,7 @@ def nyt_requests_get(url, endpoint, payload=None):
 db = DB_CLIENT['NY_Project']
 archive_collection = db['times_archive']
 
-def get_archive_data(years=3,months_offset=0):
+def get_archive_data(years=3,months_offset=0,month_delta=0):
     '''This function will receive all archive data from NYT, as requested.
     We will specify how many years we want to go back (three by default),
     as well as how many months we want to skip (say, we don't want the most
@@ -44,6 +45,15 @@ def get_archive_data(years=3,months_offset=0):
     'api-key':API_KEY
     }
 
+    #Special mode: if total months is at a set value, we don't care about anything else.
+    #This is code for "give me the latest X amount of months"
+    if (month_delta > 0):
+        yr = todays_date.year
+        mth = ((todays_date.month - month_delta) % 12) + 1
+        if mth > todays_date.month:
+            yr = yr - 1
+
+    #Run this no matter what:
     while (yr < archive_year) or ((yr <= archive_year) and (mth <= archive_month)):
 
         endp_archive = f'{yr}/{mth}.json'
@@ -65,6 +75,10 @@ def get_archive_data(years=3,months_offset=0):
 
             if mongo_check is None:
                 archive_collection.insert_one(article)
+            elif (yr < todays_date.year):
+                break
+            elif (mth < todays_date.month):
+                break
 
         mth = mth + 1
 
@@ -81,4 +95,26 @@ if __name__=='__main__':
 Please run this script after performing this step.''')
     else:
         print("Performing data acquisition routines from the New York Times' Archive API.")
-        get_archive_data(5,0)
+        if len(sys.argv)>1:
+            if len(sys.argv)>2:
+                try:
+                    nb_years = int(sys.argv[1])
+                    nb_offset_months = int(sys.argv[2])
+                    get_archive_data(nb_years,nb_offset_months)
+                except:
+                    get_archive_data()
+
+            elif not (sys.argv in ['-h','--help','-help']):
+                try:
+                    #If we have a number
+                    nb_years = int(sys.argv[1])
+                    get_archive_data(nb_years)
+                except:
+                    #If not, you better have typed "latest"
+                    if sys.argv[1] in ['latest','-l','--latest','-latest','--l']:
+                        get_archive_data(month_delta=1)
+
+            else:
+                print('''To do: implement CLI documentation here.''')
+        else:
+            get_archive_data()

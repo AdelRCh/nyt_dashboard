@@ -229,3 +229,6 @@ Please run this script after performing this step.''')
 
         elif len(sys.argv) == 2 and (sys.argv[1].lower() in ['-h', '--help', '-help']):
             print('''TO DO: implement documentation on CLI.''')
+
+        elif len(sys.argv) == 1:
+            get_full_newswire_output()
