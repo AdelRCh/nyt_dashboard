@@ -12,10 +12,28 @@ dash.register_page(__name__)
 MONGO_LABEL = os.environ.get('MONGODB_ADDRESS','localhost') #Unless you have your own address
 MONGO_PORT = int(os.environ.get('MONGODB_PORT',27017)) #Unless you have a specific port, default is 27017
 DB_CLIENT = pymongo.MongoClient(MONGO_LABEL, MONGO_PORT) # pymongo.MongoClient(host=MONGO_LABEL, port=MONGO_PORT)
+#my_session = DB_CLIENT.start_session(causal_consistency=True)
+
 db = DB_CLIENT['NY_Project']
 
 articlesearch = db['times_archive'] #Archive + Kenan's NY Articles collection
 
+pipeline_recent_articles = [
+    {
+        '$sort': {'pub_date': -1}
+    },
+    {
+        '$limit': 5
+    },
+    {
+        "$project":
+            {
+            'headline': '$headline',
+            'web_url': '$web_url',
+            'pub_date': '$pub_date'
+            }
+    }
+]
 #Article Search Section
 pipeline = [
     {
@@ -23,14 +41,7 @@ pipeline = [
             '_id': '$news_desk',
             # 'section_word_count': {'$sum': '$word_count'},
             'section_word_count': {'$avg': '$word_count'},
-            'section_article_count': {'$sum': 1},
-            'newest_articles': {
-                '$push': {
-                    'headline': '$headline',
-                    'web_url': '$web_url',
-                    'pub_date': '$pub_date'
-                }
-            }
+            'section_article_count': {'$sum': 1}
         }
     },
     {
@@ -44,8 +55,7 @@ pipeline = [
                     'average_word_count': {'$avg': '$section_word_count'},
                     'article_count': '$section_article_count'
                 }
-            },
-            'all_articles': {'$push': '$newest_articles'}
+            }
         }
     },
     {
@@ -53,35 +63,20 @@ pipeline = [
             'average_word_count': 1,
             'total_article_count': 1,
             'sections': 1,
-            # Flatten the array of arrays
-            'flattened_articles': {'$reduce': {
-                'input': '$all_articles',
-                'initialValue': [],
-                'in': {'$concatArrays': ['$$value', '$$this']}
-            }}
         }
-    },
-    {
-        '$unwind': '$flattened_articles'
-    },
-    {
-        '$sort': {'flattened_articles.pub_date': -1}
-    },
-    {
-        '$limit': 5
     },
     {
         '$group': {
             '_id': '$_id',
             'average_word_count': {'$first': '$average_word_count'},
             'total_article_count': {'$first': '$total_article_count'},
-            'sections': {'$first': '$sections'},
-            'newest_articles': {'$push': '$flattened_articles'}
+            'sections': {'$first': '$sections'}
         }
     }
 ]
 
 result_article_search = list(articlesearch.aggregate(pipeline))
+result_latest_articles = list(articlesearch.aggregate(pipeline_recent_articles))
 
 if result_article_search:
    # Extracting data from the 'result' for 'sections'
@@ -104,7 +99,8 @@ if result_article_search:
     average_word_count = result_article_search[0]["average_word_count"]
     sections = [section['section'] for section in result_article_search[0]['sections']]
     article_counts = [section['article_count'] for section in result_article_search[0]['sections']]
-    newest_articles = result_article_search[0]['newest_articles']
+
+    newest_articles = result_latest_articles
 
     ## Figure
     # Extract the data for the scatter plot
