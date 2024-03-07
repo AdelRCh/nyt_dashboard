@@ -14,7 +14,7 @@ MONGO_PORT = int(os.environ.get('MONGODB_PORT',27017)) #Unless you have a specif
 DB_CLIENT = pymongo.MongoClient(MONGO_LABEL, MONGO_PORT) # pymongo.MongoClient(host=MONGO_LABEL, port=MONGO_PORT)
 db = DB_CLIENT['NY_Project']
 
-articlesearch = db['ny_articles'] #Kenan's NY Articles Collection
+articlesearch = db['times_archive'] #Archive + Kenan's NY Articles collection
 
 #Article Search Section
 pipeline = [
@@ -144,7 +144,7 @@ tab_art_landing = html.Div([
     html.H2("5 Latest Articles:"),
     # Create a list of links to the 5 newest articles
     html.Ul([
-        html.Li(html.A(article['headline']['main'], href=article['web_url'],target='_blank'), style={'list-style-type': 'none'}) for article in newest_articles
+        html.Li(html.A(article['headline'], href=article['web_url'],target='_blank'), style={'list-style-type': 'none'}) for article in newest_articles
     ])]
     )
 
@@ -194,7 +194,7 @@ def update_search_results(search_query):
     # MongoDB query to find articles containing the search query in keywords
     search_pipeline = [
         {'$match': {'keywords.value': {'$regex': f'{search_query}', '$options': 'i'}}},
-        {'$project': {'headline': '$headline.main', 'web_url': '$web_url', '_id': 0}},
+        {'$project': {'headline': '$headline', 'web_url': '$web_url', '_id': 0}},
         {'$limit': 5}
     ]
 
