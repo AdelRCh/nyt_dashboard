@@ -62,7 +62,7 @@ def get_archive_data(years=3,months_offset=0,month_delta=0):
 
         for article in archive_json.get('response',{}).get('docs',[]):
 
-            for excess_key in ['multimedia','keywords','_id']:
+            for excess_key in ['multimedia','_id']:
                 try:
                     del article[excess_key]
                 except:
