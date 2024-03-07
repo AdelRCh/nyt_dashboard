@@ -49,11 +49,11 @@ def get_article_search_pages(nb_pages=100):
 
     # Access the database
     db = client['NY_Project']
-    collection = db['ny_articles']
+    collection = db['times_archive']
 
     # Get the maximum _id value from the collection
     max_id = collection.find_one(sort=[("ny_id", -1)])
-    index_counter = max_id['ny_id'] + 1 if max_id else 0
+    index_counter = max_id.get('ny_id',-1) + 1 if max_id else 0
 
     # Main loop
     page = 0
@@ -99,7 +99,7 @@ def get_article_search_pages(nb_pages=100):
         for doc in DOCS:
             # Assuming 'uri' is the unique identifier field in your article data
             article_uri = doc['uri']
-            
+
             #Removing extra keys - if they aren't in our document, proceed as if
             #nothing happened.
             for excess_key in ['multimedia','keywords','_id']:
@@ -107,10 +107,11 @@ def get_article_search_pages(nb_pages=100):
                     del doc[excess_key]
                 except:
                     continue
-            
-            #Adjust the byline and headline fields - implement later
-            #doc['byline'] = doc.get('byline',{}).get('original',None)
-            #doc['headline'] = doc.get('headline',{}).get('main',None)
+
+            #Adjust the byline and headline fields
+            doc['byline'] = doc.get('byline',{}).get('original',None)
+            doc['headline'] = doc.get('headline',{}).get('main',None)
+
 
             # Update the article if it exists, otherwise insert it
             collection.update_one({'uri': article_uri}, {'$set': doc}, upsert=True)
