@@ -104,7 +104,7 @@ Please run this script after performing this step.''')
                 except:
                     get_archive_data()
 
-            elif not (sys.argv in ['-h','--help','-help']):
+            elif not (sys.argv in ['-h','--help','-help', '--h']):
                 try:
                     #If we have a number
                     nb_years = int(sys.argv[1])
@@ -113,8 +113,30 @@ Please run this script after performing this step.''')
                     #If not, you better have typed "latest"
                     if sys.argv[1] in ['latest','-l','--latest','-latest','--l']:
                         get_archive_data(month_delta=1)
+                    else:
+                        print('The command was incorrectly used. Please use -h for more details.')
 
             else:
-                print('''To do: implement CLI documentation here.''')
+                print('''Welcome to the NYT Data Acquisition script. You can use this script as follows:
+
+* python3 archive_nyt_data.py -h (or --help, or -help, or --h): shows this text.
+
+* python3 archive_nyt_data.py -l (or --latest, -latest, --l): acquires archive
+data for the current month
+
+* python3 archive_nyt_data.py <nb>: acquire NYT archive data for the last <nb>
+years (must be a digit)
+
+* python3 archive_nyt_data.py <nb1> <nb2>: same as above, but allows for an
+offset. For instance, if you wish to acquire data spanning five years, but
+starting from five months ago, the command would be
+    python3 archive_nyt_data.py 5 5
+
+Any erroneous use will either default to acquiring data from the last three
+years, or show an error message.
+
+If no arguments are used, the script will acquire data from the last three years
+by default.
+''')
         else:
             get_archive_data()
