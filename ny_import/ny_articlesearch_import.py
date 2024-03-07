@@ -102,7 +102,7 @@ def get_article_search_pages(nb_pages=100):
 
             #Removing extra keys - if they aren't in our document, proceed as if
             #nothing happened.
-            for excess_key in ['multimedia','keywords','_id']:
+            for excess_key in ['multimedia','_id']:
                 try:
                     del doc[excess_key]
                 except:
