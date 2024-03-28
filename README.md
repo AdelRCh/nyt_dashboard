@@ -1,6 +1,6 @@
 # New York Times: A Dashboard
 
-This repository is inspired by a capstone group project undertaken during the @DataScientest data engineering boot camp alongside [KSuljic](https://github.com/KSuljic/) and [Jeahy.](https://github.com/Jeahy)
+This repository is inspired by a capstone group project undertaken during the [DataScientest](https://github.com/DataScientest) data engineering boot camp alongside [KSuljic](https://github.com/KSuljic/) and [Jeahy.](https://github.com/Jeahy)
 
 The initial group repository can be found [here.](https://github.com/KSuljic/ny_project) As such, you may consider this repository as a fork of sorts.
 
