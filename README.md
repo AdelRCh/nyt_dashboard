@@ -1,6 +1,6 @@
 # New York Times: A Dashboard
 
-This repository is inspired by a capstone group project undertaken during the DataScientest boot camp alongside [KSuljic](https://github.com/KSuljic/) and [Jeahy.](https://github.com/Jeahy)
+This repository is inspired by a capstone group project undertaken during the @DataScientest data engineering boot camp alongside [KSuljic](https://github.com/KSuljic/) and [Jeahy.](https://github.com/Jeahy)
 
 The initial group repository can be found [here.](https://github.com/KSuljic/ny_project) As such, you may consider this repository as a fork of sorts.
 
@@ -31,4 +31,6 @@ That said, please provide a .env file with the following:
 
 ## Upcoming changes
 
-I will expand this repository to include a revamped portal where I will use the NY Times' various APIs fit to purpose. Expect gradual changes to occur over time as I build/remake sections one by one.
+I will expand this repository to include a revamped portal where I will use the NY Times' various APIs. Expect gradual changes to occur over time as I build/remake/tweak sections one by one to account for higher data volume.
+
+Also, and this might be unnecessary, a healthy dose of Cython and a few bulkWrites (MongoDB) might barge in to speed up runtimes.
